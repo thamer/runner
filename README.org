@@ -1,11 +1,11 @@
-This library allows for a set of shell commands to be linked to
-file or directory names. These commands can then be used in dired
-mode using =dired-do-shell-command= (or pressing "!"). Since this
-library modifies the behavior of =dired-guess-shell-alist-user=,
-the command syntax will follow that variable's syntax (see the
-documentation of =dired-guess-shell-alist-user= for more).
+This library links a set of shell commands to file or directory
+names. These commands can then be used in dired mode using
+=dired-do-shell-command= (or pressing "!"). Since this library
+modifies the behavior of =dired-guess-shell-alist-user=, the command
+syntax will follow that variable's syntax (see the documentation of
+=dired-guess-shell-alist-user= for more).
 
-* Features: 
+* Features
 
 - Provides a widget.el interface to add, edit, and sort shell commands.
 - Gets rid of the "A command is running - kill it? Yes or No?" message.
@@ -15,14 +15,17 @@ documentation of =dired-guess-shell-alist-user= for more).
 - If the command string contains "{run:shell}", run the command
   using the function specified in =runner-shell-function=.
 
-* Install:
+* Install
 
 Put this file in your Emacs-Lisp load path, and add the following
 into your $HOME/.emacs startup file.
 
 :    (require 'runner)
 
-* Usage:
+The functions =dired-guess-default= (from dired-x.el) and
+=dired-run-shell-command= (from dired-aux.el) will be redefined.
+
+* Usage
 
 While in dired mode, position point on any file or directory you
 wish to add a shell command to, then do:
@@ -51,6 +54,25 @@ may choose a different location by doing:
 
 : M-x customize-variable runner-init-file
 
-The functions =dired-guess-default= (from dired-x.el) and
-=dired-run-shell-command= (from dired-aux.el) will be redefined.
 
+* Tips
+
+Oftentimes I have complicated commands that rely on the base name of a file (sans extension) being available. I wrote the following bash script and called it =run-f=.
+
+#+begin_src sh
+#!/bin/bash
+#
+# Return the base file name sans extension. If more than one file is
+# passed, just return the first one.
+#
+for file in "$@"
+do
+    FILESANSEXT="${file%.*}"
+    echo "$FILESANSEXT"
+    exit;
+done
+#+end_src sh
+
+Now I can easily pass complex commands from runner.el. For instance, the following command creates a text file from a scanned PDF using ocrodjvu:
+
+: {run:out} pdf2djvu -o "$(run-f ? ).djvu" ? && ocrodjvu -o "$(run-f ? )_ocr.djvu" "$(run-f ? ).djvu" && djvutxt "$(run-f ? )_ocr.djvu" "$(run-f ? ).txt" &
