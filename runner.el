@@ -2,8 +2,8 @@
 
 ;; Author: Thamer Mahmoud <thamer.mahmoud@gmail.com>
 ;; Version: 1.1
-;; Time-stamp: <2012-04-30 17:59:40 thamer>
-;; URL: http://www.emacswiki.org/emacs/download/runner.el
+;; Time-stamp: <2012-05-14 09:20:35 thamer>
+;; URL: https://github.com/thamer/runner
 ;; Keywords: shell command, dired, file extension, open with
 ;; Compatibility: Tested on GNU Emacs 23.3 and 24.1
 ;; Copyright (C) 2012 Thamer Mahmoud.
@@ -34,7 +34,7 @@
 ;; the command syntax will follow that variable's syntax (see the
 ;; documentation of `dired-guess-shell-alist-user' for more).
 ;;
-;;; Features: 
+;;; Features:
 ;;
 ;; * Provides a widget.el interface to add, edit, and sort shell
 ;;   commands.
@@ -113,20 +113,12 @@
   :set (lambda (symbol value)
          (set symbol value)
          (if value
-	     (progn
-	       (add-to-list
-		'special-display-buffer-names
-		'("*Runner Output*" runner-background-frame-function nil))
-	       (add-to-list 
-		'special-display-buffer-names
-		'("*Async Shell Command*" runner-background-frame-function nil)))
+             (add-to-list
+              'special-display-buffer-names
+              '("*Runner Output*" runner-background-frame-function nil))
            (setq special-display-buffer-names
                  (remove
                   '("*Runner Output*" runner-background-frame-function nil)
-                  special-display-buffer-names))
-           (setq special-display-buffer-names
-                 (remove
-                  '("*Async Shell Command*" runner-background-frame-function nil)
                   special-display-buffer-names)))))
 
 (defcustom runner-shell-function 'runner-shell-function-eshell
@@ -527,34 +519,23 @@ commands. Redefined to handle priorities and multiple regexps."
               (when (get-buffer-process outbuf)
                 (with-current-buffer outbuf
                   (rename-buffer (concat "*Runner Command More*: " command) t)))
-              (if handler
-		  (progn
-		    (runner-output-when-handler)
-		    (apply handler scf (list command)))
+              (if handler (apply handler
+                                 scf (list command outbuf))
                 (funcall scf command outbuf)))
           (progn
             ;; Make a unique buffer if buffer is busy.
-            ;; NOTE: Ignore output options when using a handler as
-            ;; some handlers do not support setting the output buffer
-            (if handler 
-		(progn
-		  (runner-output-when-handler)
-		  (apply handler scf (list command)))
-	      (when (get-buffer-process "*Runner Output*")
-		(with-current-buffer "*Runner Output*"
-		  (rename-buffer "*Runner Output More*" t)))
+            (when (get-buffer-process "*Runner Output*")
+              (with-current-buffer "*Runner Output*"
+                (rename-buffer "*Runner Output More*" t)))
+            (if handler (apply handler scf (list command "*Runner Output*"))
               (funcall scf command "*Runner Output*")))))))
   ;; return nil
   nil)
 
 (defun runner-background-frame-function (buf par-list)
-  (other-window 1)
-  (goto-char (point-min)))
-
-(defun runner-output-when-handler ()
-  (when (get-buffer-process "*Async Shell Command*")
-    (with-current-buffer "*Async Shell Command*"
-      (rename-buffer "*Async Shell Command More*" t))))
+ (let ((buf (get-buffer "*Runner Output*")))
+   (with-current-buffer buf
+     (goto-char (point-min)))))
 
 ;; FIXME: Do we really need to set this to nil?
 (setq dired-guess-shell-alist-user nil)
@@ -564,9 +545,7 @@ commands. Redefined to handle priorities and multiple regexps."
 (when runner-run-in-background
   ;; Output buffers should go to the background.
   (add-to-list 'special-display-buffer-names
-               '("*Runner Output*" runner-background-frame-function nil))
-  (add-to-list 'special-display-buffer-names
-               '("*Async Shell Command*" runner-background-frame-function nil)))
+               '("*Runner Output*" runner-background-frame-function nil)))
 
 (provide 'runner)
 ;;; runner.el ends here.
