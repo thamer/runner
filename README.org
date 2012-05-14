@@ -1,6 +1,6 @@
 This library links a set of shell commands to file or directory
 names. These commands can then be used in dired mode using
-=dired-do-shell-command= (or pressing "!"). Since this library
+=dired-do-shell-command= (by pressing "!"). Since this library
 modifies the behavior of =dired-guess-shell-alist-user=, the command
 syntax will follow that variable's syntax (see the documentation of
 =dired-guess-shell-alist-user= for more).
@@ -73,6 +73,6 @@ do
 done
 #+END_EXAMPLE
 
-Now I can easily pass complex commands from runner.el. For instance, the following command creates a text file from a scanned PDF using ocrodjvu:
+Now I can easily pass multiple commands from runner.el. For instance, the following command creates a text file from a scanned PDF using ocrodjvu:
 
 : {run:out} pdf2djvu -o "$(run-f ? ).djvu" ? && ocrodjvu -o "$(run-f ? )_ocr.djvu" "$(run-f ? ).djvu" && djvutxt "$(run-f ? )_ocr.djvu" "$(run-f ? ).txt" &
