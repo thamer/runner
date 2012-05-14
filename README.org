@@ -59,7 +59,7 @@ may choose a different location by doing:
 
 Oftentimes I have complicated commands that rely on the base name of a file (sans extension) being available. I wrote the following bash script and called it =run-f=.
 
-#+begin_src sh
+#+BEGIN_EXAMPLE
 #!/bin/bash
 #
 # Return the base file name sans extension. If more than one file is
@@ -71,7 +71,7 @@ do
     echo "$FILESANSEXT"
     exit;
 done
-#+end_src sh
+#+END_EXAMPLE
 
 Now I can easily pass complex commands from runner.el. For instance, the following command creates a text file from a scanned PDF using ocrodjvu:
 
