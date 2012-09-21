@@ -514,17 +514,21 @@ commands. Redefined to handle priorities and multiple regexps."
              (find-file-name-handler (directory-file-name default-directory)
                                      'scf)))
         (if keep-output
-	    ;; limit the buffer name length to 100 to avoid cluttering the buffer list
-            (let ((outbuf (concat "*Runner Command*: " (if (> (length command) 100)
-							   (concat (substring command 0 100) " ...")
-							 command))))
+	    ;; limit the buffer name length to 100 to avoid cluttering
+	    ;; the buffer list
+            (let ((outbuf
+		   (concat "*Runner Command*: " 
+			   (if (> (length command) 100)
+			       (concat (substring command 0 100) " ...")
+			     command))))
               ;; Make a unique buffer if buffer is busy.
               (when (get-buffer-process outbuf)
                 (with-current-buffer outbuf
-                  (rename-buffer (concat "*Runner Command More*: " 
-					 (if (> (length command) 100)
-					     (concat (substring command 0 100) " ...")
-					   command)) t)))
+                  (rename-buffer
+		   (concat "*Runner Command More*: "
+			   (if (> (length command) 100)
+			       (concat (substring command 0 100) " ...")
+			     command)) t)))
               (if handler (apply handler
                                  scf (list command outbuf))
                 (funcall scf command outbuf)))
