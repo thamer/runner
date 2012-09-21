@@ -1,8 +1,8 @@
 ;;; runner.el --- improved "open with" suggestions for dired ---
 
 ;; Author: Thamer Mahmoud <thamer.mahmoud@gmail.com>
-;; Version: 1.1
-;; Time-stamp: <2012-05-14 09:20:35 thamer>
+;; Version: 1.2
+;; Time-stamp: <2012-09-21 19:31:30 thamer>
 ;; URL: https://github.com/thamer/runner
 ;; Keywords: shell command, dired, file extension, open with
 ;; Compatibility: Tested on GNU Emacs 23.3 and 24.1
@@ -478,8 +478,8 @@ commands. Redefined to handle priorities and multiple regexps."
         (setq cmds (append cmds (cdr elt))
               regexp-list nil)))
 
-    ;; Set the shell-command. FIXME: Sometimes (like when combining
-    ;; 001 and 002) not all regexps are applied.
+    ;; Set the shell-command. FIXME: Sometimes (like when handiling
+    ;; extensions like 001 and 002) not all regexps are applied.
     (while (and flist matched-regexp
                 (string-match matched-regexp (car flist)))
       (setq flist (cdr flist)))
@@ -514,11 +514,17 @@ commands. Redefined to handle priorities and multiple regexps."
              (find-file-name-handler (directory-file-name default-directory)
                                      'scf)))
         (if keep-output
-            (let ((outbuf (concat "*Runner Command*: " command)))
+	    ;; limit the buffer name length to 100 to avoid cluttering the buffer list
+            (let ((outbuf (concat "*Runner Command*: " (if (> (length command) 100)
+							   (concat (substring command 0 100) " ...")
+							 command))))
               ;; Make a unique buffer if buffer is busy.
               (when (get-buffer-process outbuf)
                 (with-current-buffer outbuf
-                  (rename-buffer (concat "*Runner Command More*: " command) t)))
+                  (rename-buffer (concat "*Runner Command More*: " 
+					 (if (> (length command) 100)
+					     (concat (substring command 0 100) " ...")
+					   command)) t)))
               (if handler (apply handler
                                  scf (list command outbuf))
                 (funcall scf command outbuf)))
