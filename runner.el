@@ -5,7 +5,7 @@
 ;; Time-stamp: <2012-09-21 19:31:30 thamer>
 ;; URL: https://github.com/thamer/runner
 ;; Keywords: shell command, dired, file extension, open with
-;; Compatibility: Tested on GNU Emacs 23.3 and 24.1
+;; Compatibility: Tested on GNU Emacs 23.3 and 24.x
 ;; Copyright (C) 2012 Thamer Mahmoud.
 
 ;; This file is NOT part of GNU Emacs.
