@@ -517,7 +517,7 @@ commands. Redefined to handle priorities and multiple regexps."
 	    ;; limit the buffer name length to 100 to avoid cluttering
 	    ;; the buffer list
             (let ((outbuf
-		   (concat "*Runner Command*: " 
+		   (concat "*Runner Command*: "
 			   (if (> (length command) 100)
 			       (concat (substring command 0 100) " ...")
 			     command))))
