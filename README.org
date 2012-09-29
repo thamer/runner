@@ -20,7 +20,7 @@ syntax will follow that variable's syntax (see the documentation of
 Put this file in your Emacs-Lisp load path, and add the following
 into your $HOME/.emacs startup file.
 
-:    (require 'runner)
+: (require 'runner)
 
 The functions =dired-guess-default= (from dired-x.el) and
 =dired-run-shell-command= (from dired-aux.el) will be redefined.
@@ -53,7 +53,6 @@ The command database will be saved to the variable
 may choose a different location by doing:
 
 : M-x customize-variable runner-init-file
-
 
 * Tips
 
