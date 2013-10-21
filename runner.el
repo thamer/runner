@@ -1,4 +1,4 @@
-;;; runner.el --- improved "open with" suggestions for dired ---
+;;; runner.el --- Improved "open with" suggestions for dired
 
 ;; Author: Thamer Mahmoud <thamer.mahmoud@gmail.com>
 ;; Version: 1.2
