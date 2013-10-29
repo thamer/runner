@@ -32,7 +32,7 @@
 ;; mode using `dired-do-shell-command' (or pressing "!"). Since this
 ;; library modifies the behavior of `dired-guess-shell-alist-user',
 ;; the command syntax will follow that variable's syntax (see the
-;; documentation of `dired-guess-shell-alist-user' for more).
+;; documentation of `dired-do-shell-command' for more).
 ;;
 ;;; Features:
 ;;
@@ -42,12 +42,15 @@
 ;; * Gets rid of the "A command is running - kill it? Yes or No?"
 ;;   message.
 ;;
-;; * If `runner-run-in-background' is set to t, send the stdout buffer
-;;   to the background except when the command string includes
-;;   `{run:out}'.
+;; * If command string contains `{run:out}', then keep output in a
+;;   specially named buffer.
 ;;
-;; * If the command string contains `{run:shell}', run the command
-;;   using the function specified in `runner-shell-function'.
+;; * If command string contains `{run:shell}', run command using the
+;;   function specified in `runner-shell-function'.
+;;
+;; * If `runner-run-in-background' is set to t, send output buffer to
+;;   the background, except when the command string contains
+;;   `{run:out}'.
 ;;
 ;;; Install:
 ;;
@@ -134,12 +137,12 @@
 (defvar runner-alist nil
   "An alist holding types associated with a set of commands. Each
   type has the following structure:
- NAME         ;; Unique name used as key.
- PATTERN-type ;; See the types.
+ NAME         ;; Unique name used as key
+ PATTERN-type ;; Set the pattern type
  PATTERN      ;; Pattern is string representing a Regexp
  COMMAND-LIST ;; A list of lists holding commands with the following structure:
-    LABEL     ;; Optional command label currently used as comment.
-    COMMAND   ;; Command string.
+    LABEL     ;; Optional command label currently used as comment
+    COMMAND   ;; Command string
     PRIORITY  ;; Priority of processing this command. Default is 5.")
 
 (defun runner-shell-function-eshell (command)
@@ -200,7 +203,7 @@ triggers an error."
   (let* ((ext (file-name-extension (dired-get-filename)))
          (name (concat "ext-" ext)))
     (if (eq ext nil)
-        (error "Runner: No extension found")
+        (error "runner: No extension found")
       (runner-add-name name "File type")
       (if (assoc name runner-alist)
           (runner-edit name)
@@ -367,7 +370,7 @@ regexps. Ex. jpe?g gif png (case-insensitive)" 0)
     matched))
 
 (defun runner-save (widget-list)
-  "Adds values of widget to type lists, saves them to file and
+  "Adds values of widget to type lists, saves them to a file and
 update."
   (let* ((old-name (widget-get (nth 0 widget-list) :being-edited))
          (current (assoc old-name runner-alist))
@@ -458,7 +461,7 @@ commands. Redefined to handle priorities and multiple regexps."
         (setq matched-regexp regexp)
         (setq cmds (append cmds (cdr elt)))))
 
-    ;; Sort based on priority number (1 is highest, more is lower) and
+    ;; Sort based on priority number (0 is highest, more is lower) and
     ;; strip out the priorities.
     (setq cmds (append cmds nil))
     (setq cmds
@@ -478,7 +481,7 @@ commands. Redefined to handle priorities and multiple regexps."
         (setq cmds (append cmds (cdr elt))
               regexp-list nil)))
 
-    ;; Set the shell-command. FIXME: Sometimes (like when handiling
+    ;; Set the shell-command. FIXME: Sometimes (like when handling
     ;; extensions like 001 and 002) not all regexps are applied.
     (while (and flist matched-regexp
                 (string-match matched-regexp (car flist)))
@@ -509,26 +512,26 @@ commands. Redefined to handle priorities and multiple regexps."
                                          'scf)))
             (if handler (apply handler scf (list command))
               (funcall scf command))))
-      ;; not running in a shell
+      ;; Not running in a shell
       (let ((handler
              (find-file-name-handler (directory-file-name default-directory)
                                      'scf)))
         (if keep-output
-	    ;; limit the buffer name length to 100 to avoid cluttering
-	    ;; the buffer list
+            ;; Limit the buffer name length to 100 to avoid cluttering
+            ;; the buffer list
             (let ((outbuf
-		   (concat "*Runner Command*: "
-			   (if (> (length command) 100)
-			       (concat (substring command 0 100) " ...")
-			     command))))
+                   (concat "*Runner Command*: "
+                           (if (> (length command) 100)
+                               (concat (substring command 0 100) " ...")
+                             command))))
               ;; Make a unique buffer if buffer is busy.
               (when (get-buffer-process outbuf)
                 (with-current-buffer outbuf
                   (rename-buffer
-		   (concat "*Runner Command More*: "
-			   (if (> (length command) 100)
-			       (concat (substring command 0 100) " ...")
-			     command)) t)))
+                   (concat "*Runner Command More*: "
+                           (if (> (length command) 100)
+                               (concat (substring command 0 100) " ...")
+                             command)) t)))
               (if handler (apply handler
                                  scf (list command outbuf))
                 (funcall scf command outbuf)))
@@ -539,7 +542,7 @@ commands. Redefined to handle priorities and multiple regexps."
                 (rename-buffer "*Runner Output More*" t)))
             (if handler (apply handler scf (list command "*Runner Output*"))
               (funcall scf command "*Runner Output*")))))))
-  ;; return nil
+  ;; Return nil
   nil)
 
 (defun runner-background-frame-function (buf par-list)

@@ -9,11 +9,13 @@ syntax will follow that variable's syntax (see the documentation of
 
 - Provides a widget.el interface to add, edit, and sort shell commands.
 - Gets rid of the "A command is running - kill it? Yes or No?" message.
+- If command string contains `{run:out}', then keep output in a
+  specially named buffer.
+- If the command string contains "{run:shell}", run the command
+  using the function specified in =runner-shell-function=.
 - If =runner-run-in-background= is set to t, send the stdout buffer
   to the background except when the command string includes
   "{run:out}".
-- If the command string contains "{run:shell}", run the command
-  using the function specified in =runner-shell-function=.
 
 * Install
 
