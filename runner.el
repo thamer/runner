@@ -1,14 +1,14 @@
 ;;; runner.el --- Improved "open with" suggestions for dired
 
 ;; Author: Thamer Mahmoud <thamer.mahmoud@gmail.com>
-;; Version: 1.2
-;; Time-stamp: <2012-09-21 19:31:30 thamer>
+;; Version: 1.3
+;; Time-stamp: <2014-01-06 18:43:48 thamer>
 ;; URL: https://github.com/thamer/runner
 ;; Keywords: shell command, dired, file extension, open with
 ;; Compatibility: Tested on GNU Emacs 23.3 and 24.x
-;; Copyright (C) 2012 Thamer Mahmoud.
+;; Copyright (C) 2012-4 Thamer Mahmoud.
 
-;; This file is NOT part of GNU Emacs.
+;; This file is not part of GNU Emacs.
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -45,12 +45,10 @@
 ;; * If command string contains `{run:out}', then keep output in a
 ;;   specially named buffer.
 ;;
-;; * If command string contains `{run:shell}', run command using the
-;;   function specified in `runner-shell-function'.
+;; * If command string contains `{run:shell}', then run command using
+;;   the function specified in `runner-shell-function'.
 ;;
-;; * If `runner-run-in-background' is set to t, send output buffer to
-;;   the background, except when the command string contains
-;;   `{run:out}'.
+;; * For other options, see `M-x customize-group runner'.
 ;;
 ;;; Install:
 ;;
@@ -70,7 +68,7 @@
 ;; A new buffer will be created allowing you to specify what commands
 ;; to run.
 ;;
-;; A file name or extension can be linked to multiple set of
+;; A file name or extension can be linked to multiple sets of
 ;; commands. You can view and edit which pattern is being applied to a
 ;; file by positioning point on a file and running,
 ;;
@@ -108,15 +106,34 @@
   :type 'file
   :group 'runner)
 
+(defcustom runner-show-label nil
+  "If set to t, the label will be displayed in the minibuffer
+before each command using `runner-label-face'. If changed
+manually using setq, run M-x (runner-reset)."
+  :type 'boolean
+  :group 'runner
+  :set (lambda (symbol value)
+         (set symbol value)
+         ;; Reset runner
+         (when (fboundp 'runner)
+           (runner-reset))))
+
+(defface runner-label-face
+  '((t (:foreground "red")))
+  "Face for displaying labels next to commands."
+  :group 'runner)
+
 (defcustom runner-run-in-background nil
-  "Hide all stdout buffers unless the command was run with
-{run:out} in the command string."
+  "If set to t, send output buffer to the background except when
+the command string contains `{run:out}'."
   :type 'boolean
   :group 'runner
   :set (lambda (symbol value)
          (set symbol value)
          (if value
              (add-to-list
+              ;; FIXME: As of 24.3, special-display-buffer-names is
+              ;; obsolete. Use `display-buffer-alist' instead.
               'special-display-buffer-names
               '("*Runner Output*" runner-background-frame-function nil))
            (setq special-display-buffer-names
@@ -138,10 +155,10 @@
   "An alist holding types associated with a set of commands. Each
   type has the following structure:
  NAME         ;; Unique name used as key
- PATTERN-type ;; Set the pattern type
- PATTERN      ;; Pattern is string representing a Regexp
+ PATTERN-type ;; Sets the pattern type (filename or extension)
+ PATTERN      ;; A regexp
  COMMAND-LIST ;; A list of lists holding commands with the following structure:
-    LABEL     ;; Optional command label currently used as comment
+    LABEL     ;; Optional command label
     COMMAND   ;; Command string
     PRIORITY  ;; Priority of processing this command. Default is 5.")
 
@@ -157,24 +174,24 @@
         (print runner-names (current-buffer))
         (print runner-alist (current-buffer))
         (write-file file nil)
-        (message "runner: Settings saved")))))
+        (message "Runner: Settings saved")))))
 
 (defun runner-settings-load ()
   (let ((file (expand-file-name runner-init-file)))
     (save-excursion
       (with-temp-buffer
         (if (not (file-exists-p file))
-            (message "runner: No runner config file found.\
+            (message "Runner: No runner config file found.\
  Please run runner-add first.")
           (insert-file-contents file)
           (goto-char (point-min))
           (condition-case eof
               (setq runner-names (read (current-buffer)))
-            (end-of-file (message "runner: Failed to load
+            (end-of-file (message "Runner: Failed to load
             pattern names. File exists but empty or corrupt.")))
           (condition-case eof
               (setq runner-alist (read (current-buffer)))
-            (end-of-file (message "runner: Failed to load
+            (end-of-file (message "Runner: Failed to load
             pattern list File exists but empty or corrupt.")))
           (setq runner-custom-loaded t))))))
 
@@ -182,7 +199,7 @@
   "Adds name to an alist, but checks if a name already exists and
 triggers an error."
   (when (equal name "")
-    (error (format "runner: %s name cannot be empty." doc-string))))
+    (error (format "Runner: %s name cannot be empty." doc-string))))
 
 (defun runner-add-filename ()
   "Used for defining a set of commands for a file or directory name"
@@ -203,7 +220,7 @@ triggers an error."
   (let* ((ext (file-name-extension (dired-get-filename)))
          (name (concat "ext-" ext)))
     (if (eq ext nil)
-        (error "runner: No extension found")
+        (error "Runner: No extension found")
       (runner-add-name name "File type")
       (if (assoc name runner-alist)
           (runner-edit name)
@@ -343,17 +360,19 @@ regexps. Ex. jpe?g gif png (case-insensitive)" 0)
   (interactive)
   ;; Create a list of patterns matching current file
   (let ((pat-list (runner-find-pattern
-                   (dired-get-filename 'no-dir) runner-names)))
+                   (dired-get-filename 'no-dir) runner-names)) name)
     (if (eq (length pat-list) 1)
         (runner-create-edit-buffer (car pat-list))
       (progn
         (unless pat-list
           (error "Runner: No pattern defined for this file or extension.\
  Use runner-add-file or runner-add-extension."))
-        (runner-create-edit-buffer
-         (completing-read
-          "Edit runner pattern for this files: "
-          pat-list nil t))))))
+        (setq name (completing-read
+                    "Edit runner pattern for this files: "
+                    pat-list nil t))
+        (if (equal name "")
+            (error "Runner: File type cannot be empty")
+          (runner-create-edit-buffer name))))))
 
 (defun runner-find-pattern (file-name names-list)
   (let ((matched))
@@ -409,9 +428,22 @@ dired-guess-shell-alist-user"
 
 (defun runner-commands (command-list)
   "Get a list of commands usable for
-dired-guess-shell-alist-user. Also the nth 1 is the position of
-the command in runner-list."
-  (mapcar (lambda (item) (list (nth 1 item) (nth 2 item))) command-list))
+dired-guess-shell-alist-user. Adds label and priority."
+  (mapcar (lambda (item)
+            (let ((label (nth 0 item))
+                  (command (nth 1 item))
+                  (priority (nth 2 item)))
+              (if (and runner-show-label (> (length label) 0))
+                  (list
+                   ;; FIXME: Find a better alternative. For now, we
+                   ;; insert a space character then replace it with
+                   ;; the label.
+                   (concat (propertize " " 'display (concat label " ")
+                                       'face 'runner-label-face
+                                       'intangible t)
+                           command)
+                   priority)
+                (list command priority)))) command-list))
 
 (defun runner (enable)
   (if (not (length runner-names))
@@ -546,14 +578,19 @@ commands. Redefined to handle priorities and multiple regexps."
   nil)
 
 (defun runner-background-frame-function (buf par-list)
- (let ((buf (get-buffer "*Runner Output*")))
-   (with-current-buffer buf
-     (goto-char (point-min)))))
+  (let ((buf (get-buffer "*Runner Output*")))
+    (with-current-buffer buf
+      (goto-char (point-min)))))
 
-;; FIXME: Do we really need to set this to nil?
-(setq dired-guess-shell-alist-user nil)
+(defun runner-reset ()
+  "Reload runner settings."
+  (interactive)
+  ;; FIXME: Do we really need to set this to nil?
+  (setq dired-guess-shell-alist-user nil)
+  (runner t))
+
 (runner-settings-load)
-(runner t)
+(runner-reset)
 
 (when runner-run-in-background
   ;; Output buffers should go to the background.
