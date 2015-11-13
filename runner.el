@@ -1,8 +1,8 @@
 ;;; runner.el --- Improved "open with" suggestions for dired
 
 ;; Author: Thamer Mahmoud <thamer.mahmoud@gmail.com>
-;; Version: 1.4
-;; Time-stamp: <2015-11-13 18:37:20 thamer>
+;; Version: 1.5
+;; Time-stamp: <2015-11-13 20:24:40 thamer>
 ;; URL: https://github.com/thamer/runner
 ;; Keywords: shell command, dired, file extension, open with
 ;; Compatibility: Tested on GNU Emacs 23.3 and 24.x
@@ -340,6 +340,8 @@ regexps. Ex. jpe?g gif png (case-insensitive)" 0)
                    "Cancel")
     (widget-insert "\n\n")
     ;; Keymap
+    ;; FIXME: This is needed to get rid of cus-edit bindings.
+    (mapc (lambda (p) (widget-put p :keymap nil)) runner-widgets)
     (set-keymap-parent map widget-keymap)
     (define-key map (kbd "C-c C-c")
       '(lambda () (interactive)
