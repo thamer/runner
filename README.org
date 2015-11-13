@@ -21,7 +21,7 @@ syntax will follow that variable's syntax (see the documentation of
 
 * Install
 
-Put this file in your Emacs-Lisp load path, and add the following
+Put runner.el in your Emacs-Lisp load path, and add the following
 into your $HOME/.emacs startup file.
 
 : (require 'runner)

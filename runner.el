@@ -1,12 +1,12 @@
 ;;; runner.el --- Improved "open with" suggestions for dired
 
 ;; Author: Thamer Mahmoud <thamer.mahmoud@gmail.com>
-;; Version: 1.3
-;; Time-stamp: <2014-01-06 18:43:48 thamer>
+;; Version: 1.4
+;; Time-stamp: <2015-11-13 18:37:20 thamer>
 ;; URL: https://github.com/thamer/runner
 ;; Keywords: shell command, dired, file extension, open with
 ;; Compatibility: Tested on GNU Emacs 23.3 and 24.x
-;; Copyright (C) 2012-4 Thamer Mahmoud.
+;; Copyright (C) 2012-5 Thamer Mahmoud.
 
 ;; This file is not part of GNU Emacs.
 
@@ -27,11 +27,11 @@
 
 ;;; Commentary:
 ;;
-;; This library allows for a set of shell commands to be linked to
-;; file or directory names. These commands can then be used in dired
-;; mode using `dired-do-shell-command' (or pressing "!"). Since this
-;; library modifies the behavior of `dired-guess-shell-alist-user',
-;; the command syntax will follow that variable's syntax (see the
+;; This library links a set of shell commands to file or directory
+;; names. These commands can then be used in dired mode using
+;; `dired-do-shell-command' (or pressing "!"). Since this library
+;; modifies the behavior of `dired-guess-shell-alist-user', the
+;; command syntax will follow that variable's syntax (see the
 ;; documentation of `dired-do-shell-command' for more).
 ;;
 ;;; Features:
@@ -47,6 +47,12 @@
 ;;
 ;; * If command string contains `{run:shell}', then run command using
 ;;   the function specified in `runner-shell-function'.
+;;
+;; * When `runner-run-in-background' is set to t, hide all output
+;;   buffers except when the command string includes "{run:out}".
+;;
+;; * If =runner-show-label= is set to t, display label next to each
+;;   command.
 ;;
 ;; * For other options, see `M-x customize-group runner'.
 ;;
@@ -333,9 +339,7 @@ regexps. Ex. jpe?g gif png (case-insensitive)" 0)
                              (kill-buffer))
                    "Cancel")
     (widget-insert "\n\n")
-    ;; This is needed to get rid of cus-edit bindings.
-    ;; Keymaps
-    (widget-put (get 'editable-field 'widget-type) :keymap nil)
+    ;; Keymap
     (set-keymap-parent map widget-keymap)
     (define-key map (kbd "C-c C-c")
       '(lambda () (interactive)
@@ -366,7 +370,7 @@ regexps. Ex. jpe?g gif png (case-insensitive)" 0)
       (progn
         (unless pat-list
           (error "Runner: No pattern defined for this file or extension.\
- Use runner-add-file or runner-add-extension."))
+Please use runner-add-file or runner-add-extension first."))
         (setq name (completing-read
                     "Edit runner pattern for this files: "
                     pat-list nil t))
