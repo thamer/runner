@@ -281,7 +281,7 @@ triggers an error."
     (make-local-variable 'runner-widgets)
     (erase-buffer)
     (remove-overlays)
-    (require 'widget)
+    (require 'wid-edit)
     (widget-insert "Type `C-c C-c' or press [Save] after you have \
 finished editing.\n\n" )
     (setq runner-widgets
