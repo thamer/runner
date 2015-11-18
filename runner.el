@@ -1,8 +1,8 @@
 ;;; runner.el --- Improved "open with" suggestions for dired
 
 ;; Author: Thamer Mahmoud <thamer.mahmoud@gmail.com>
-;; Version: 1.5
-;; Time-stamp: <2015-11-13 20:24:40 thamer>
+;; Version: 1.6
+;; Time-stamp: <2015-11-18 13:11:23 thamer>
 ;; URL: https://github.com/thamer/runner
 ;; Keywords: shell command, dired, file extension, open with
 ;; Compatibility: Tested on GNU Emacs 23.3 and 24.x
@@ -42,16 +42,16 @@
 ;; * Gets rid of the "A command is running - kill it? Yes or No?"
 ;;   message.
 ;;
-;; * If command string contains `{run:out}', then keep output in a
+;; * If command string contains "{run:out}", then keep output in a
 ;;   specially named buffer.
 ;;
-;; * If command string contains `{run:shell}', then run command using
+;; * If command string contains "{run:shell}", then run command using
 ;;   the function specified in `runner-shell-function'.
 ;;
 ;; * When `runner-run-in-background' is set to t, hide all output
 ;;   buffers except when the command string includes "{run:out}".
 ;;
-;; * If =runner-show-label= is set to t, display label next to each
+;; * If `runner-show-label' is set to t, display label next to each
 ;;   command.
 ;;
 ;; * For other options, see `M-x customize-group runner'.
@@ -86,9 +86,9 @@
 ;; M-x runner-edit
 ;; M-x runner-delete
 ;;
-;; The command database will be saved to the variable
-;; `runner-init-file' (default is "~/.emacs.d/runner-conf.el"). You
-;; may choose a different location by doing:
+;; The command database will be saved to the file `runner-init-file'
+;; (default is "~/.emacs.d/runner-conf.el"). You may choose a
+;; different location by doing:
 ;;
 ;; M-x customize-variable runner-init-file
 ;;
@@ -169,7 +169,7 @@ the command string contains `{run:out}'."
     PRIORITY  ;; Priority of processing this command. Default is 5.")
 
 (defun runner-shell-function-eshell (command)
-  "Default function to run commands in an interactive shell"
+  "Default function to run commands in an interactive shell."
   (require 'eshell)
   (eshell-command command))
 
@@ -198,8 +198,7 @@ the command string contains `{run:out}'."
           (condition-case eof
               (setq runner-alist (read (current-buffer)))
             (end-of-file (message "Runner: Failed to load
-            pattern list File exists but empty or corrupt.")))
-          (setq runner-custom-loaded t))))))
+            pattern list File exists but empty or corrupt."))))))))
 
 (defun runner-add-name (name doc-string)
   "Adds name to an alist, but checks if a name already exists and
@@ -282,7 +281,7 @@ triggers an error."
     (erase-buffer)
     (remove-overlays)
     (require 'wid-edit)
-    (widget-insert "Type `C-c C-c' or press [Save] after you have \
+    (widget-insert "Type `C-c C-v' or press [Save] after you have \
 finished editing.\n\n" )
     (setq runner-widgets
           (list
@@ -340,13 +339,13 @@ regexps. Ex. jpe?g gif png (case-insensitive)" 0)
                    "Cancel")
     (widget-insert "\n\n")
     ;; Keymap
-    ;; FIXME: This is needed to get rid of cus-edit bindings.
-    (mapc (lambda (p) (widget-put p :keymap nil)) runner-widgets)
     (set-keymap-parent map widget-keymap)
-    (define-key map (kbd "C-c C-c")
+    (define-key map (kbd "C-c C-v")
       '(lambda () (interactive)
          (runner-save runner-widgets)
          (kill-buffer)))
+    ;; FIXME: This is needed to get rid of cus-edit bindings.
+    (mapc (lambda (p) (widget-put p :keymap map)) runner-widgets)
     (use-local-map map)
     (widget-setup))
   (goto-char (point-min))
@@ -372,7 +371,7 @@ regexps. Ex. jpe?g gif png (case-insensitive)" 0)
       (progn
         (unless pat-list
           (error "Runner: No pattern defined for this file or extension.\
-Please use runner-add-file or runner-add-extension first."))
+ Please use runner-add-file or runner-add-extension first."))
         (setq name (completing-read
                     "Edit runner pattern for this files: "
                     pat-list nil t))
