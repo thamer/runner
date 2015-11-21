@@ -66,6 +66,10 @@ location by doing:
 
 : M-x customize-variable runner-init-file
 
+** See also
+
+- [[https://github.com/DamienCassou/unify-opening][Unify-opening.el]]: make packages in Emacs use the same mechanism to open files.
+
 ** Tips
 
 For shell commands that rely on the base name of a file (sans extension)
