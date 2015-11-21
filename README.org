@@ -74,8 +74,8 @@ being available, the following bash script (saved as =run-f=) can be useful:
 #+BEGIN_EXAMPLE
 #!/bin/bash
 #
-# Return the base file name sans extension. If more than one file is
-# passed, just return the first one.
+# Return the base file name sans extension. If more than
+# one file is passed, just return the first one.
 #
 for file in "$@"
 do
