@@ -1,11 +1,13 @@
+** Runner.el
+
 This library links a set of shell commands to file or directory
 names. These commands can then be used in dired mode using
-=dired-do-shell-command= (by pressing "!"). Since this library
-modifies the behavior of =dired-guess-shell-alist-user=, the command
+`dired-do-shell-command' (by pressing "!"). Since this library
+modifies the behavior of `dired-guess-shell-alist-user', the command
 syntax will follow that variable's syntax (see the documentation of
-=dired-guess-shell-alist-user= for more).
+`dired-do-shell-command' for more).
 
-* Features
+** Features
 
 - Provides a widget.el interface to add, edit, and sort shell commands.
 - Gets rid of the "A command is running - kill it? Yes or No?" message.
@@ -13,23 +15,29 @@ syntax will follow that variable's syntax (see the documentation of
   named buffer.
 - If command string contains "{run:shell}", then run command using the
   function specified in =runner-shell-function=.
-- If =runner-run-in-background= is set to t, send the stdout buffer
+- When =runner-run-in-background= is set to t, send the stdout buffer
   to the background except when the command string includes
   "{run:out}".
-- If =runner-show-label= is set to t, display label next to each
+- If =runner-show-label= is set to t, display a label next to each
   command.
+- For other options, see =M-x customize-group runner=.
 
-* Install
+** Install [[https://melpa.org/#/runner][file:https://melpa.org/packages/runner-badge.svg]]
 
-Put runner.el in your Emacs-Lisp load path, and add the following
-into your $HOME/.emacs startup file.
+Using Melpa:
+
+: M-x package-install RET runner RET
+
+
+For manual installation, put runner.el in your Emacs-Lisp load path,
+and add this into your init file:
 
 : (require 'runner)
 
 The functions =dired-guess-default= (from dired-x.el) and
 =dired-run-shell-command= (from dired-aux.el) will be redefined.
 
-* Usage
+** Usage
 
 While in dired mode, position point on any file or directory you
 wish to add a shell command to, then do:
@@ -52,17 +60,16 @@ You can also add, edit, or delete any specific pattern by doing:
 : M-x runner-edit
 : M-x runner-delete
 
-The command database will be saved to the variable
-=runner-init-file= (default is "~/.emacs.d/runner-conf.el"). You
-may choose a different location by doing:
+The command database will be saved to the file =runner-init-file=
+(default is "~/.emacs.d/runner-conf.el"). You may choose a different
+location by doing:
 
 : M-x customize-variable runner-init-file
 
-* Tips
+** Tips
 
-Oftentimes I have commands that rely on the base name of a
-file (sans extension) being available. I wrote the following bash
-script and called it =run-f=.
+For shell commands that rely on the base name of a file (sans extension)
+being available, the following bash script (saved as =run-f=) can be useful:
 
 #+BEGIN_EXAMPLE
 #!/bin/bash
@@ -78,8 +85,7 @@ do
 done
 #+END_EXAMPLE
 
-Now I can easily pass multiple commands from runner.el. For instance,
-the following command creates a text file from a scanned PDF using
+For example, this command creates a text file from a scanned PDF using
 ocrodjvu:
 
 : {run:out} pdf2djvu -o "$(run-f ? ).djvu" ? && ocrodjvu -o "$(run-f ? )_ocr.djvu" "$(run-f ? ).djvu" && djvutxt "$(run-f ? )_ocr.djvu" "$(run-f ? ).txt" &
