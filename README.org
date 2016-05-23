@@ -27,9 +27,7 @@ Using Melpa:
 
 : M-x package-install RET runner RET
 
-
-For manual installation, put runner.el in your Emacs-Lisp load path,
-and add this into your init file:
+Then add this into your init file:
 
 : (require 'runner)
 
