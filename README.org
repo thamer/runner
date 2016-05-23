@@ -15,11 +15,10 @@ syntax will follow that variable's syntax (see the documentation of
   named buffer.
 - If command string contains "{run:shell}", then run command using the
   function specified in =runner-shell-function=.
-- When =runner-run-in-background= is set to t, send the stdout buffer
-  to the background except when the command string includes
-  "{run:out}".
+- When =runner-run-in-background= is active, hide all output buffers
+  except when the command string contains "{run:out}".
 - If =runner-show-label= is set to t, display a label next to each
-  command.
+  command. When changed manually using setq, run `M-x runner-reset'.
 - For other options, see =M-x customize-group runner=.
 
 ** Install [[https://melpa.org/#/runner][file:https://melpa.org/packages/runner-badge.svg]]
@@ -66,14 +65,15 @@ location by doing:
 
 : M-x customize-variable runner-init-file
 
-** See also
+** Related libraries
 
-- [[https://github.com/DamienCassou/unify-opening][Unify-opening.el]]: make packages in Emacs use the same mechanism to open files.
+- [[https://github.com/DamienCassou/unify-opening][Unify-opening]] - extend dired/runner open file mechanism to other modes.
 
 ** Tips
 
-For shell commands that rely on the base name of a file (sans extension)
-being available, the following bash script (saved as =run-f=) can be useful:
+For shell commands that rely on the base name of a file (filename sans
+extension), the following bash script (saved as =run-f=) can be
+useful:
 
 #+BEGIN_EXAMPLE
 #!/bin/bash
@@ -89,7 +89,7 @@ do
 done
 #+END_EXAMPLE
 
-For example, this command creates a text file from a scanned PDF using
-ocrodjvu:
+For example, in dired/runner this command creates a text file from a
+scanned PDF using the same filename:
 
 : {run:out} pdf2djvu -o "$(run-f ? ).djvu" ? && ocrodjvu -o "$(run-f ? )_ocr.djvu" "$(run-f ? ).djvu" && djvutxt "$(run-f ? )_ocr.djvu" "$(run-f ? ).txt" &

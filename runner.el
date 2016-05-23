@@ -1,8 +1,8 @@
 ;;; runner.el --- Improved "open with" suggestions for dired
 
 ;; Author: Thamer Mahmoud <thamer.mahmoud@gmail.com>
-;; Version: 1.6
-;; Time-stamp: <2015-11-18 13:11:23 thamer>
+;; Version: 1.7
+;; Time-stamp: <2016-05-23 10:03:06 thamer>
 ;; URL: https://github.com/thamer/runner
 ;; Keywords: shell command, dired, file extension, open with
 ;; Compatibility: Tested on GNU Emacs 23.3 and 24.x
@@ -48,11 +48,11 @@
 ;; * If command string contains "{run:shell}", then run command using
 ;;   the function specified in `runner-shell-function'.
 ;;
-;; * When `runner-run-in-background' is set to t, hide all output
-;;   buffers except when the command string includes "{run:out}".
+;; * When `runner-run-in-background' is active, hide all output
+;;   buffers except when the command string contains "{run:out}".
 ;;
-;; * If `runner-show-label' is set to t, display label next to each
-;;   command.
+;; * If `runner-show-label' is set to t, display a label next to each
+;;   command. If changed manually using setq, run `M-x runner-reset'.
 ;;
 ;; * For other options, see `M-x customize-group runner'.
 ;;
@@ -62,6 +62,9 @@
 ;; into your $HOME/.emacs startup file.
 ;;
 ;;     (require 'runner)
+;;
+;; The functions `dired-guess-default' (from dired-x.el) and
+;; `dired-run-shell-command' (from dired-aux.el) will be redefined.
 ;;
 ;;; Usage:
 ;;
@@ -91,9 +94,6 @@
 ;; different location by doing:
 ;;
 ;; M-x customize-variable runner-init-file
-;;
-;; The functions `dired-guess-default' (from dired-x.el) and
-;; `dired-run-shell-command' (from dired-aux.el) will be redefined.
 ;;
 ;;
 
@@ -129,23 +129,30 @@ manually using setq, run M-x (runner-reset)."
   "Face for displaying labels next to commands."
   :group 'runner)
 
-(defcustom runner-run-in-background nil
-  "If set to t, send output buffer to the background except when
-the command string contains `{run:out}'."
-  :type 'boolean
+(define-minor-mode runner-run-in-background
+  "Toggle runner-run-in-background minor mode. When active hide
+all output buffers created by `dired-do-shell-command' except
+when the command string contains `{run:out}'."
+  :global t
   :group 'runner
-  :set (lambda (symbol value)
-         (set symbol value)
-         (if value
-             (add-to-list
-              ;; FIXME: As of 24.3, special-display-buffer-names is
-              ;; obsolete. Use `display-buffer-alist' instead.
-              'special-display-buffer-names
-              '("*Runner Output*" runner-background-frame-function nil))
-           (setq special-display-buffer-names
-                 (remove
-                  '("*Runner Output*" runner-background-frame-function nil)
-                  special-display-buffer-names)))))
+  (if runner-run-in-background
+      (add-to-list
+       ;; FIXME: As of 24.3, special-display-buffer-names is
+       ;; obsolete. Use `display-buffer-alist' instead.
+       'special-display-buffer-names
+       '("*Runner Output*" runner-background-frame-function nil))
+    (setq special-display-buffer-names
+	  (remove
+	   '("*Runner Output*" runner-background-frame-function nil)
+	   special-display-buffer-names))))
+
+(defcustom runner-run-in-background nil
+  "Toggle runner-run-in-background minor mode. When active hide
+all output buffers created by `dired-do-shell-command' except
+when the command string contains `{run:out}'."
+  :set 'custom-set-minor-mode
+  :type    'boolean
+  :group   'runner)
 
 (defcustom runner-shell-function 'runner-shell-function-eshell
   "Function to use to execute commands when `{run:shell}' is
