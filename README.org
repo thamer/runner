@@ -18,7 +18,7 @@ syntax will follow that variable's syntax (see the documentation of
 - When =runner-run-in-background= is active, hide all output buffers
   except when the command string contains "{run:out}".
 - If =runner-show-label= is set to t, display a label next to each
-  command. When changed manually using setq, run `M-x runner-reset'.
+  command. When changed manually using setq, run =M-x runner-reset=.
 - For other options, see =M-x customize-group runner=.
 
 ** Install [[https://melpa.org/#/runner][file:https://melpa.org/packages/runner-badge.svg]]
