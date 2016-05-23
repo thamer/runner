@@ -21,7 +21,7 @@ syntax will follow that variable's syntax (see the documentation of
   command. When changed manually using setq, run =M-x runner-reset=.
 - For other options, see =M-x customize-group runner=.
 
-** Install [[https://melpa.org/#/runner][file:https://melpa.org/packages/runner-badge.svg]]
+** Install [[https://stable.melpa.org/#/runner][file:https://stable.melpa.org/packages/runner-badge.svg]] [[https://melpa.org/#/runner][file:https://melpa.org/packages/runner-badge.svg]]
 
 Using Melpa:
 
