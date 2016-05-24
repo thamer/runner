@@ -1,12 +1,12 @@
 ;;; runner.el --- Improved "open with" suggestions for dired
 
 ;; Author: Thamer Mahmoud <thamer.mahmoud@gmail.com>
-;; Version: 1.7
-;; Time-stamp: <2016-05-23 10:03:06 thamer>
+;; Version: 1.8
+;; Time-stamp: <2016-05-24 10:02:01 thamer>
 ;; URL: https://github.com/thamer/runner
 ;; Keywords: shell command, dired, file extension, open with
 ;; Compatibility: Tested on GNU Emacs 23.3 and 24.x
-;; Copyright (C) 2012-5 Thamer Mahmoud.
+;; Copyright (C) 2012-6 Thamer Mahmoud.
 
 ;; This file is not part of GNU Emacs.
 
@@ -102,7 +102,7 @@
 (require 'dired-x)
 (require 'dired-aux)
 
-(defgroup runner nil "runner group"
+(defgroup runner nil "Improved \"open with\" suggestions for dired."
   :group 'convenience
   :group 'dired)
 
@@ -115,7 +115,7 @@
 (defcustom runner-show-label nil
   "If set to t, the label will be displayed in the minibuffer
 before each command using `runner-label-face'. If changed
-manually using setq, run M-x (runner-reset)."
+manually using setq, run M-x runner-reset."
   :type 'boolean
   :group 'runner
   :set (lambda (symbol value)
@@ -142,17 +142,17 @@ when the command string contains `{run:out}'."
        'special-display-buffer-names
        '("*Runner Output*" runner-background-frame-function nil))
     (setq special-display-buffer-names
-	  (remove
-	   '("*Runner Output*" runner-background-frame-function nil)
-	   special-display-buffer-names))))
+          (remove
+           '("*Runner Output*" runner-background-frame-function nil)
+           special-display-buffer-names))))
 
 (defcustom runner-run-in-background nil
   "Toggle runner-run-in-background minor mode. When active hide
 all output buffers created by `dired-do-shell-command' except
 when the command string contains `{run:out}'."
   :set 'custom-set-minor-mode
-  :type    'boolean
-  :group   'runner)
+  :type 'boolean
+  :group 'runner)
 
 (defcustom runner-shell-function 'runner-shell-function-eshell
   "Function to use to execute commands when `{run:shell}' is
@@ -525,8 +525,8 @@ commands. Redefined to handle priorities and multiple regexps."
         (setq cmds (append cmds (cdr elt))
               regexp-list nil)))
 
-    ;; Set the shell-command. FIXME: Sometimes (like when handling
-    ;; extensions like 001 and 002) not all regexps are applied.
+    ;; Set the shell-command. FIXME: When handling extensions like 001
+    ;; and 002, not all regexps are applied.
     (while (and flist matched-regexp
                 (string-match matched-regexp (car flist)))
       (setq flist (cdr flist)))
@@ -603,11 +603,6 @@ commands. Redefined to handle priorities and multiple regexps."
 
 (runner-settings-load)
 (runner-reset)
-
-(when runner-run-in-background
-  ;; Output buffers should go to the background.
-  (add-to-list 'special-display-buffer-names
-               '("*Runner Output*" runner-background-frame-function nil)))
 
 (provide 'runner)
 ;;; runner.el ends here.
